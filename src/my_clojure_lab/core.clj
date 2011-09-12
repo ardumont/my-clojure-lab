@@ -1,30 +1,18 @@
 (ns my-clojure-lab.core
-   (:use [clojure.test               :only [run-tests]])
-   (:use [midje.sweet])
-   (:use [clojure.contrib.repl-utils :only [show]])
-   (:use [clojure.pprint             :only [pprint]])
-   (:use [clojure.walk               :only [macroexpand-all]]))
-
-                                        ; simple fact to present the midje framework
-(fact (+ 1 1) => 2)
+  (:use [clojure.test               :only [run-tests]])
+  (:use [midje.sweet])
+  (:use [clojure.contrib.repl-utils :only [show]])
+  (:use [clojure.pprint             :only [pprint]])
+  (:use [clojure.walk               :only [macroexpand-all]]))
 
                                         ; example on how to declare a function
 (def my-mult (fn [x y] (* x y)))
-
-(fact (my-mult 10 2) => 20)
-
 
                                         ; another way of declaring functions
 (defn sq
   "squares the provided argument"
   [x]
   (* x x))
-
-(fact (sq 0) => 0)
-(fact (sq 5) => 25)
-
-(fact (doc sq) => nil)
-
                                         ; another one with multiple implementations
                                         ; depending on the number of arguments (fixed)
 (defn square-or-multiply
@@ -33,10 +21,6 @@
   ([x] (* x x))
   ([x y] (* x y)))
 
-(fact (square-or-multiply) => 0)
-(fact (square-or-multiply 5) => 25)
-(fact (square-or-multiply 5 6) => 30)
-
                                         ; this time with an indefinite number of arguments
 
 (defn add-arg-count
@@ -44,19 +28,11 @@
   [first & more]
   (+ first (count more)))
 
-(fact (add-arg-count 5) => 5)
-(fact (add-arg-count 5 0) => 6)
-(fact (add-arg-count 5 0 1 2 3) => 9)
-
                                         ; square function with shorthand function declaration
 (def sq2 #(* % %))
-(fact (sq2 0) => 0)
-(fact (sq2 5) => 25)
 
                                         ; shorthand function declaration
 (def my-mult2 #(* %1 %2))
-(fact (my-mult2 10 2) => 20)
-(fact (my-mult 1 2) => 2)
 
                                         ; conditional expressions
                                         ; if
@@ -77,12 +53,6 @@
    (<= x 20) "nice!"
    :else "too hot!")
   )
-
-(fact (weather-judge -10) => "extremely cold!")
-(fact (weather-judge 10) => "cold!")
-(fact (weather-judge 20) => "nice!")
-(fact (weather-judge 30) => "too hot!")
-
                                         ; Local bindings
 
 (fact (let [ a 2 b 3] (+ a b)) => 5)
@@ -94,9 +64,6 @@
   (let [nb-seconds-in-one-minutes 60]
     (* nb-seconds-in-one-minutes nb-minutes)
     ))
-
-(fact (minutes-to-seconds 5) => 300)
-(fact (minutes-to-seconds 10) => 600)
 
                                         ; convert seconds to weeks
 
@@ -112,9 +79,6 @@
        )
   )
 
-; 7 days 
-(fact (seconds-to-weeks 604800) => 1)
-
 ; second version
 (defn seconds-to-weeks2 "Converts seconds to weeks"
   [nb-seconds]
@@ -124,9 +88,6 @@
         nb-weeks (/ nb-days 7)]
     nb-weeks))
 
-(fact (seconds-to-weeks2 604800) => 1)
-(fact (seconds-to-weeks2 1209600) => 2)
-
                                         ; Looping and recursion
 
                                         ; absolute value of a number
@@ -135,17 +96,11 @@
   [x]
   (if (< x 0) (* x -1) x))
 
-(fact (abs -10) => 10)
-(fact (abs 10) => 10)
-
                                         ; average number of two arguments
 
 (defn avg "average number of two arguments"
   [x y]
   (/ (+ x y) 2))
-
-(fact (avg 10 5) => 15/2)
-(fact (avg 10 6) => 8)
 
                                         ; is the result close enough
                                         ; of the square root of a number
@@ -159,12 +114,11 @@
     )
   )
 
-(fact (good-enough? 25 5) => true)
-(fact (good-enough? 25 4) => false)
-(fact (good-enough? 25 4.9999999) => true)
-
                                         ; square root
 
+                                        ; tail recursion because, for
+                                        ; the resolution, it only
+                                        ; returns the result
 (defn sqrt "Square root"
   ([number] (sqrt number 1.0) )
   ([number guess]
@@ -173,11 +127,68 @@
        (sqrt number (avg guess (/ number guess)))))
   )
 
-;.;. This is the future you were hoping for. -- @Vaguery
-(fact (good-enough? 25 (sqrt 25)) => true)
-(fact (good-enough? 16 (sqrt 16)) => true)
-(fact (sqrt 1) => 1)
+                                        ; exponent
 
+                                        ; no tail recursion because there is computing
+                                        ; at the end
+(defn
+  pow "Calculates a number to a provided exponent"
+  ([x y]
+     (if (<= (- y 1) 0)
+       x
+       (* x (pow x (- y 1))))
+     )
+  )
 
+                                        ; zero?
 
+; Is the parameter provided zero?
+;(def
+;  zero?
+; #(= 0 %))
+
+; may be missing a lib because i think zero? is not known
+(defn
+  pow2
+  "Calculates a number to a provided exponent"
+  [x y]
+  (if (zero? y)
+    1
+    (* x (pow2 x (- y 1))))
+  )
+
+                                        ; add-up: add up all the number to a given limit
+
+; naive add-up, no tail recursion
+(defn
+  add-up
+  "Add up all the number to a given limit"
+  [limit]
+  (if (zero? limit)
+    limit
+    (+ limit (add-up (- limit 1))))
+  )
+
+(fact (add-up 4) => 10)
+(fact (add-up 5) => 15)
+(fact (add-up 6) => 21)
+(fact (add-up 500) => 125250)
+
+                                        ; less naive version without
+                                        ; tail recursion but prepared to use it
+
+(defn
+  add-up2
+  "Add up all the number to a given limit"
+  ([limit] (add-up2 limit 0 0))
+  ([limit count sum]
+     (if (< limit count)
+       sum
+       (add-up2 limit (+ count 1) (+ sum count))))
+  )
+
+(fact (add-up2 4) => 10)
+(fact (add-up2 5) => 15)
+(fact (add-up2 6) => 21)
+(fact (add-up2 500) => 125250)
 
