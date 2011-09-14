@@ -22,7 +22,7 @@
 (fact (sq 0) => 0)
 (fact (sq 5) => 25)
 
-(fact (doc sq) => nil)
+;(fact (doc sq) => nil)
 
                                         ; another one with multiple implementations
                                         ; depending on the number of arguments (fixed)
@@ -125,6 +125,7 @@
 ; 7 days 
 (fact (seconds-to-weeks2 604800) => 1)
 (fact (seconds-to-weeks2 1209600) => 2)
+
                                         ; Looping and recursion
 
                                         ; absolute value of a number
@@ -179,8 +180,6 @@
 (fact (good-enough? 16 (sqrt 16)) => true)
 (fact (sqrt 1) => 1)
 (fact (sqrt 25) => (roughly 5))
-;.;. The sum of wisdom is that time is never lost that is devoted to
-;.;. work. -- Emerson
 (fact (sqrt 16) => (roughly 4))
 (fact (sqrt 100) => (roughly 10))
 
@@ -303,3 +302,268 @@
 (fact (loop-sqrt 25) => (roughly 5))
 (fact (loop-sqrt 16) => (roughly 4))
 (fact (loop-sqrt 100) => (roughly 10))
+
+                                        ; do
+
+;(do
+;  (println "hello")
+;  (println "from")  
+;  (println "side effects")
+;  (+ 5 5))
+
+                                        ; high order function
+(defn arg-switch
+  "Applies the supplied function to the arguments in both possible orders. "
+  [fun arg1 arg2]
+  (list (fun arg1 arg2) (fun arg2 arg1)))
+
+(fact (arg-switch / 1 2) => [1/2 2]) 
+(fact (arg-switch + 1 2) => [3 3])
+
+                                        ; Producing first class functions
+
+                                        ; mine
+(defn rangechecker
+  "Returns a function that determines if a number is in a provided range."
+  [min max]
+  (fn
+    [num]
+    (not (or (< num min) (> num max))))
+  )
+
+(def myrange-5-10 (rangechecker 5 10))
+
+(fact (myrange-5-10 4)=> false)
+(fact (myrange-5-10 5)=> true)
+(fact (myrange-5-10 6)=> true)
+(fact (myrange-5-10 7)=> true)
+(fact (myrange-5-10 8)=> true)
+(fact (myrange-5-10 9)=> true)
+(fact (myrange-5-10 10)=> true)
+(fact (myrange-5-10 11)=> false)
+
+; theirs
+(defn rangechecker2
+  "Returns a function that determines if a number is in a provided range."
+  [min max]
+  (fn
+    [num]
+    (and (<= min num) (<= num max)))
+  )
+
+(def myrange-1-2 (rangechecker2 1 2))
+
+(fact (myrange-1-2 0)=> false)
+(fact (myrange-1-2 1)=> true)
+(fact (myrange-1-2 2)=> true)
+(fact (myrange-1-2 3)=> false)
+
+                                        ; Using partial to curry functions
+
+(def times-pi (partial * 3.14))
+
+(fact (times-pi 1) => 3.14)
+(fact (times-pi 2) => 6.28)
+
+                                        ; Using comp to compose functions
+
+(def my-fn (comp - *))
+
+(fact (my-fn 5 3) => -15)
+(fact (my-fn 1 1) => -1)
+
+(def my-fn2 (comp * -))
+
+;(fact (my-fn2 5 3) => 30)
+
+                                        ; common numeric functions
+
+                                        ; /
+(fact (/ 0 10) => 0) 
+(fact (/ 10) => 1/10)
+(fact (/ 1.0 10) => 0.1)
+
+                                        ; +
+(fact (+ 1 2) => 3)
+(fact (+ 0 1) => 1)
+(fact (+ 1 2 3) => 6)
+
+                                        ; -
+
+(fact (- 1 2 3) => -4)
+(fact (- 5 2 3) => 0)
+
+                                        ; *
+
+(fact (* 1 2 3) => 6)
+(fact (* 0 1 2 3 4) => 0)
+
+                                        ; inc
+
+(fact (inc 0) => 1)
+
+                                        ; dec
+(fact (dec 0) => -1)
+(fact (dec 10) => 9)
+
+                                        ; quot -> quotient
+
+(fact (quot 5 2 ) => 2)
+(fact (quot 10 2 ) => 5)
+(fact (quot 13 2) => 6)
+
+                                        ; rem -> remainder -> modulus
+
+(fact (rem 5 2) => 1)
+(fact (rem 10 2) => 0)
+(fact (rem 128 3) => 2)
+
+                                        ; min
+
+(fact (min 10 20 1) => 1)
+(fact (min 1 0 10) => 0)
+(fact (min 9 200 199) => 9)
+
+                                        ; max
+
+(fact (max 10 20 1) => 20)
+(fact (max 1 0 10) => 10)
+(fact (max 9 200 199) => 200)
+
+                                        ; equals
+
+(fact (== 0 0) => true)
+(fact (== 1 0) => false)
+(fact (== 10.0 10) => true)
+
+                                        ; <
+
+(fact (< 10 20) => true)
+(fact (< -1 0 ) => true)
+(fact (< 1 0) => false)
+
+(fact (< 10 2 0) => false)
+(fact (< 10 20 30) => true)
+(fact (< 10 10 30) => false)
+
+                                        ; <=
+
+(fact (<= 10 10 30) => true)
+(fact (<= 10 5 30) => false)
+
+                                        ; etc...
+
+                                        ; zero? -> is the value equals
+                                        ; to 0
+
+(fact (zero? 0) => true)
+(fact (zero? 1) => false)
+
+                                        ; pos? -> positive
+
+(fact (pos? 10) => true)
+(fact (pos? -10) => false)
+(fact (pos? 0) => false)
+
+                                        ; neg? -> negative
+
+(fact (neg? 0) => false)
+(fact (neg? 10) => false)
+(fact (neg? -10) => true)
+
+                                        ; number?
+
+(fact (number? 10) => true)
+(fact (number? "hello de lu!") => false)
+
+                                        ; string
+
+                                        ; str -> concatenate
+(fact (str) => "")
+(fact (str "Hello" ", " "I'm Tony") => "Hello, I'm Tony")
+(fact (str "I have " 1 " apple.") => "I have 1 apple.")
+
+                                        ; subs -> substring
+(fact (subs "first is a string" 6) => "is a string" )
+(fact (subs "first is a string" 6 8) => "is" )
+
+                                        ; string?
+
+(fact (string? "toto") => true)
+(fact (string? 10) => false)
+(fact (string? 0) => false)
+
+                                        ; Regular expressions functions
+
+                                        ; re-pattern, to define a regexp
+(re-pattern " [A-Za-z]*")
+                                        ; other syntax -> macro
+#" [A-Za-z]*"
+
+                                        ; re-matches -> to check a
+                                        ; string with a regexp
+(fact (re-matches #"[A-Za-z]*" "test") => "test")
+(fact (re-matches #"[A-Za-z]*" "test123") => nil)
+(fact (re-matches #"[A-Za-z0-9]*" "test123") => "test123")
+
+                                        ; re-matcher, to reuse a pattern
+(def my-matcher (re-matcher #"[A-Za-z]*" "test"))
+
+                                        ; re-find
+(fact (re-find my-matcher) => "test")
+(fact (re-find my-matcher) => "")
+(fact (re-find my-matcher) => nil)
+
+                                        ; re-seq
+
+(fact (re-seq #"[a-z]" "test") => ["t" "e" "s" "t"])
+
+                                        ; collections
+
+                                        ; lists
+; to create a list
+(fact (list 12 3) => '(12 3))
+(fact '(1 2 3) => '(1 2 3))
+
+(fact (= '(1 2) '(1 2)) => true)
+(fact (= '(1 2) '(1 2 3)) => false)
+(fact (= '(1 2) '(2 1)) => false)
+
+; peek - return the first elt in the list
+(fact (peek '(1 2 3)) => 1)
+
+                                        ; pop
+
+;.;. Whoever wants to reach a distant goal must take small steps. --
+;.;. fortune cookie
+(fact (pop '(1 2 3)) => '(2 3))
+(fact (comp (pop (pop '(1 2 3)))) => '(3))
+
+                                        ; list?
+
+(fact (list? 10) => false)
+(fact (list? '(1 2)) => true)
+
+                                        ; vector
+(def vectorx [10 9 8])
+
+(fact (vectorx 0) => 10)
+(fact (vectorx 1) => 9)
+(fact (vectorx 2) => 8)
+
+                                        ; vector
+(def nums (vector 1 3 2))
+
+(fact (nums 0) => 1)
+(fact (nums 1) => 3)
+(fact (nums 2) => 2)
+
+                                        ; vec -> convert any form
+                                        ; passed to the method into a
+                                        ; new vector with the same content
+
+(fact (vec '(1 2 3)) => [1 2 3])
+
+                                        ; get
+
+(fact (get ["one" "two" "three"] 1) => "two")
