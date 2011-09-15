@@ -534,8 +534,6 @@
 
                                         ; pop
 
-;.;. Whoever wants to reach a distant goal must take small steps. --
-;.;. fortune cookie
 (fact (pop '(1 2 3)) => '(2 3))
 (fact (comp (pop (pop '(1 2 3)))) => '(3))
 
@@ -567,3 +565,133 @@
                                         ; get
 
 (fact (get ["one" "two" "three"] 1) => "two")
+
+
+                                        ; peek, for a vector, takes
+                                        ; the last arg of the vector
+                                        ; because it always adresses
+                                        ; the most efficient access
+
+(fact (peek [1 2 3]) => 3)
+(fact (peek [1 2 30]) => 30)
+
+                                        ;vector?
+
+(fact (vector? [1]) => true)
+(fact (vector? 1) => false)
+
+                                        ; conjoin -> ~union of sets
+                                        ; conj, vector then any nuber of arguments
+
+(fact (conj [1 2 3] 6 5 4) => [1 2 3 6 5 4])
+
+                                        ; assoc -> associate to a
+                                        ; vector a new value at the given index
+
+(fact (assoc [1 2 3] 1 "new value") => [1 "new value" 3])
+
+(def vectory [3 2 1])
+
+                                        ; as vectory is immutable, we can call
+                                        ; multiple times the assoc
+                                        ; method and have the same result
+
+(fact (assoc vectory 0 "test immutable") => ["test immutable" 2 1])
+(fact (assoc vectory 0 "test immutable") => ["test immutable" 2 1])
+
+                                        ; pop
+(fact (pop [3 2 1 0]) => [3 2 1])
+(fact (comp (pop (pop [3 2 1 0]))) => [3 2])
+
+                                        ; subvec -> subvector
+
+                                        ; by default, if only one
+                                        ; index, the second index is
+                                        ; the last
+
+; no second inde
+(fact (subvec [0 1 2 3 4 5] 2) => [2 3 4 5])
+; same version with the last index
+(fact (subvec [0 1 2 3 4 5] 2 6) => [2 3 4 5])
+; only one entry is taken to create the new vector
+(fact (subvec [0 1 2 3 4 5] 2 3) => [2])
+; empty vector
+(fact (subvec [0 1 2 3 4 5] 0 0) => [])
+
+                                        ; map
+
+(def maptest {:a 10 :b "toto"})
+
+(fact (maptest :a) => 10)
+(fact (maptest :b) => "toto")
+
+(fact (hash-map :a 1 :b 2 :c "test") => {:a 1 :b 2 :c "test"})
+(fact (sorted-map :a 1 :b 2 :c "test") => {:a 1 :b 2 :c "test"})
+
+                                        ; struct-map
+
+(defstruct person :first-name :last-name)
+
+(def person1 (struct-map person :first-name "antoine" :last-name "dumont"))
+(def person2 (struct-map person :first-name "denis" :last-name "labaye"))
+
+(fact (person1 :first-name) => "antoine")
+
+                                        ; accessor for struct-map
+
+(def get-first-name (accessor person :first-name))
+
+(fact (get-first-name person1) => "antoine")
+
+                                        ; assoc -> association
+
+(fact (assoc {:a 1 :b 2 :c 3} :d 4) => {:a 1 :b 2 :c 3 :d 4})
+(fact (assoc {:a 1 :b 2 :c 3} :d 4 :e 5) => {:a 1 :b 2 :c 3 :d 4 :e 5})
+
+                                        ; dissoc -> dissociation
+
+(fact (dissoc {:a 1 :b 2 :c 3 :d 4} :d :c) => {:a 1 :b 2})
+
+                                        ; conj
+
+; conj with map
+(fact (conj {:a 10 :b "toto"} {:a 150 :etiq "tata"}) => {:a 150 :b "toto" :etiq "tata"})
+
+; with vectors
+(fact (conj {:a 10 :b "toto"} [:e 150] [:et "tata"]) => {:a 10 :b "toto" :e 150 :et "tata"})
+
+                                        ; merge
+
+(fact (merge {:a 10 :b 20} {:c 150 :toto 400}) => {:a 10 :b 20 :c 150 :toto 400})
+
+                                        ; merge-with
+
+(fact (merge-with + {:a 10 :b 150} {:a 20 :c 3}) => {:a 30 :b 150 :c 3})
+
+                                        ; get
+
+(fact (get {:q 1 :w 2 :e 3} :q) => 1)
+(fact (get {:q 1 :w 2 :e 3} :a) => nil)
+(fact (get {:q 1 :w 2 :e 3} :a 0) => 0)
+
+                                        ; contains? Does the map
+                                        ; contains the keyword
+
+(fact (contains? {:a 10 :b 20} :a) => true)
+(fact (contains? {:a 10 :b 20} :c) => false)
+
+                                        ; map? -> is the argument a map?
+
+(fact (map? {:a 10}) => true)
+(fact (map? 10) => false)
+
+                                        ; keys -> return all the keys of the map
+
+(fact (keys {:a 0 :b 2 :c 4}) => '(:a :b :c))
+
+                                        ; vals -> return all the values of the map
+
+(fact (vals {:a 0 :b 2 :c 4}) => '(0 2 4))
+
+                                        ; sets
+
