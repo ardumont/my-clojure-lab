@@ -695,3 +695,33 @@
 
                                         ; sets
 
+(def languages-string #{"c++" "c" "java" "clojure"})
+(def languages-keyword #{:c++ :c :java :clojure})
+
+                                        ; define a hashset
+(def languages-string (hash-set "c++" "c" "clojure" "java"))
+
+                                        ; define a sorted set
+(def languages-string (sorted-set "c++" "c" "clojure" "java"))
+
+; access to a data in the set
+(fact (languages-keyword :c++) => :c++)
+(fact (languages-string "clojure") => "clojure")
+(fact (languages-string "inexistent language") => nil)
+
+                                        ; common set functions
+
+                                        ; union
+(fact (clojure.set/union #{:a :b} #{:c :d} #{:last}) => #{:a :b :c :d :last})
+(fact (clojure.set/union #{:a :b} #{}) => #{:a :b})
+
+                                        ; intersection
+(fact (clojure.set/intersection #{:a :b} #{:b :c :d}) => #{:b})
+(fact (clojure.set/intersection #{:a :b} #{:c :d}) => #{})
+(fact (clojure.set/intersection #{:a :b} #{:b :c :d} #{"test"}) => #{})
+(fact (clojure.set/intersection #{:a :b} #{:b :c :d} #{"test" :b}) => #{:b})
+
+                                        ; difference -> first set -
+                                        ; other sets
+(fact (clojure.set/difference #{:a :b} #{:b :c :d}) => #{:a})
+(fact (clojure.set/difference #{:a :b} #{:b :c :d} #{:last :a}) => #{})
