@@ -725,3 +725,222 @@
                                         ; other sets
 (fact (clojure.set/difference #{:a :b} #{:b :c :d}) => #{:a})
 (fact (clojure.set/difference #{:a :b} #{:b :c :d} #{:last :a}) => #{})
+
+                                        ; sequence - abstractiun layer
+                                        ; for collections
+                                        ; first works for all collections
+; list
+(fact (first '(1 3 2)) => 1)
+; vector
+(fact (first [10 20 30]) => 10)
+; set
+(fact (first #{100 200 300}) => 100)
+; map
+(fact (first { :a 100 :efg 3 :cdh 2}) => [:a 100])
+
+                                        ; rest -> all but the first element of the collection
+
+; list
+(fact (rest '(1 3 2)) => '(3 2))
+; vector
+(fact (rest [10 20 30]) => [20 30])
+; set
+(fact (rest #{100 200 300}) => [200 300])
+; map
+(fact (rest {:a 100 :efg 3 :cdh 2}) => '([ :efg 3] [ :cdh 2]))
+
+; rest and first use
+(defn printall [s]
+  (if (not (empty? s))
+    (do
+      (println "Item:" (first s))
+      (recur (rest s))
+      )
+    )
+  )
+
+(printall '(1 3 4 5))
+(printall ["hello" "the" "vector" 10])
+(printall {:1 "esrtsd" :3 4 :5 100})
+(printall "hello you")
+
+                                        ; construct sequence
+
+; cons - construct a sequence
+(fact (cons 4 '(1 2 3)) => '(4 1 2 3))
+
+; conj
+(fact (conj '(1 2 3) 4) => '(4 1 2 3))
+(fact (conj [1 2 3] 4) => [1 2 3 4])
+
+(defn make-int-seq
+  [max]
+  (loop [acc nil cnt max]
+    (if (zero? cnt)
+      acc
+      (recur (cons cnt acc) (dec cnt)))
+    ))
+
+(fact (make-int-seq 5) => '(1 2 3 4 5))
+
+                                        ; lazy sequence manually
+
+(defn lazy-counter [base increment]
+  (lazy-seq
+   (cons base (lazy-counter (+ base increment) increment))))
+
+(fact (take 3 (lazy-counter 0 2)) => '(0 2 4))
+(fact (nth (lazy-counter 2 3) 1000000) => 3000002)
+
+                                        ; lazy sequence with sequence generator
+
+(def integers-from-1 (iterate inc 1))
+
+(fact (take 3 integers-from-1) => '(1 2 3))
+
+(def integers-from-0 (iterate inc 0))
+
+(fact (take 3 integers-from-0) => '(0 1 2))
+
+(defn lazy-counter-iterate [base increment]
+  (iterate #(+ % increment) base)
+  )
+
+(fact (take 3 (lazy-counter-iterate 0 2)) => '(0 2 4))
+(fact (nth (lazy-counter-iterate 2 3) 1000000) => 3000002)
+
+
+                                        ; seq
+
+(fact (seq '(1 2 3)) => '(1 2 3))
+(fact (seq {:a 1 :b 2 :c 3}) => '([:a 1] [:b 2] [:c 3]))
+
+                                        ; vals
+
+(fact (vals {:a 1 :b 2 :c 3}) => '(1 2 3))
+
+; keys
+
+(fact (keys {:a 1 :b 2 :c 3}) => '(:a :b :c))
+
+                                        ; rseq -> reverse the sequence
+
+(fact (rseq [ 1 2 3]) => [ 3 2 1])
+
+                                        ; lazy-seq -> to construct lazy sequence
+
+                                        ; repeatedly
+
+(fact (take 3 (repeatedly (fn [] "hi")) ) => '( "hi" "hi" "hi") )
+
+; (rand-int 5) => return a random number between 0 and 4
+
+; iterate -> take a one argument function with a value
+; return an infinite sequence
+
+(fact (take 3 (iterate inc 0) ) => '(0 1 2))
+
+                                        ; repeat -> return a lazy sequence
+
+(fact (take 5 (repeat "hello")) => '("hello" "hello" "hello" "hello" "hello"))
+
+(fact (repeat 5 "hello") => '("hello" "hello" "hello" "hello" "hello"))
+
+                                        ; range
+
+(fact (range 5) => '(0 1 2 3 4))
+(fact (range 5 10) => '(5 6 7 8 9))
+
+(fact (range 5 10 2) => '(5 7 9))
+
+                                        ; distinct
+
+(fact (distinct '(3 3 3 1 1 1 2 2 2 2 2 3 3 3 4 5 6 7 7 7 1)) => '(3 1 2 4 5 6 7))
+
+                                        ; filter -> filter with the
+                                        ; predicate function passed as
+                                        ; arguments
+
+(fact (filter #(= % true) '(1 2 3 true false true "test")) => '(true true))
+(fact (filter
+       (fn [s] (= \b (first s)))
+       '("abe" "bees" "boy" "false" "book"))
+  => '("bees" "boy" "book"))
+(fact (filter
+       #(= \b (first %))
+       '("abe" "bees" "boy" "false" "book"))
+  => '("bees" "boy" "book"))
+
+                                        ; remove -> lazy sequence
+                                        ; complements of filter
+
+(fact (remove #(= % true) '(1 2 3 true false true "test"))
+  => '(1 2 3 false "test"))
+(fact (remove
+       (fn [s] (= \b (first s)))
+       '("abe" "bees" "boy" "false" "book"))
+  => '("abe" "false"))
+(fact (remove
+       #(= \b (first %))
+       '("abe" "bees" "boy" "false" "book"))
+  => '("abe" "false"))
+
+                                        ; cons
+
+(fact (cons 1 [2 3 4]) => [1 2 3 4])
+
+                                        ; concat
+
+(fact (concat [1 2 3] '(9 8 74) [100]) => [1 2 3 9 8 74 100])
+
+                                        ; lazy-cat <=> lazy concat
+
+(fact (lazy-cat [1 2 3] '(9 8 74) [100]) => [1 2 3 9 8 74 100])
+
+                                        ; mapcat
+
+; map returns list of results in list
+(fact (map #(repeat % %) '(1 2 3)) => ['(1) '(2 2) '(3 3 3)]) 
+
+; mapcat returns the merge of the results into a single list
+(fact (mapcat #(repeat % %) '(1 2 3)) => '(1 2 2 3 3 3))
+
+                                        ; cycle
+
+(fact (take 3 (cycle [1 2 3])) => [1 2 3])
+(fact (take 5 (cycle [1 2 3])) => [1 2 3 1 2])
+(fact (take 10 (cycle [10 9])) => [10 9 10 9 10 9 10 9 10 9])
+
+                                        ; interleave
+
+(fact (interleave [1 2 3] '(:a :b :c)) => '(1 :a 2 :b 3 :c))
+(fact (interleave [1 2] '(:a :b :c)) => '(1 :a 2 :b))
+(fact (interleave [1 2 3] '(:a :c)) => '(1 :a 2 :c))
+
+(fact (interleave
+       '("qa" "faq" "test")
+       [1 2]
+       [:test :an false]) => ["qa" 1 :test "faq" 2 :an])
+
+                                        ; interpose
+
+(fact (interpose "test" '(1 2 3)) => '(1 "test" 2 "test" 3))
+
+                                        ; rest
+
+(fact (rest [1 2 3]) => [2 3])
+(fact (rest (rest [1 2 3])) => [3])
+(fact (rest []) => '())
+
+                                        ; next
+
+(fact (next '(1 2 3)) => '(2 3))
+(fact (next (next '(1 2 3))) => '(3))
+(fact (next []) => nil)
+
+                                        ; drop
+
+(fact (drop 2 [1 2 3]) => [3])
+;.;. One of the symptoms of an approaching nervous breakdown is the belief
+;.;. that one's work is terribly important. -- Russell
+(fact (drop 10 [1 2 3]) => [])
